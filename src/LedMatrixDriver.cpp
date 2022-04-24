@@ -19,6 +19,11 @@ LedMatrixDriver::LedMatrixDriver(const int din_pin, const int clk_pin, const int
     this->din_pin = din_pin;
     this->clk_pin = clk_pin;
     this->csld_pin = csld_pin;
+    pinMode(din_pin, OUTPUT);
+    pinMode(clk_pin,OUTPUT);
+    pinMode(csld_pin,OUTPUT);
+    digitalWrite(csld_pin, HIGH);
+
     this->dev_num = dev_num;
     this->matrix_width = matrix_width;
     this->matrix_height = matrix_height;
@@ -29,46 +34,52 @@ LedMatrixDriver::LedMatrixDriver(const int din_pin, const int clk_pin, const int
     
     // init led_status[]
     int t_sum_col_num = dev_num << 3;       // *8
-    this->led_status = new byte[t_sum_col_num];
+    //this->led_status = new byte[t_sum_col_num];       linshi
     for(i = 0; i < t_sum_col_num; i++)
         led_status[i] = (byte)0;
     
     // init spidata[]
-    this->spidata = new byte[spidata_len];
+    //this->spidata = new byte[spidata_len];
     clear_spidata();
 
     
-    pinMode(din_pin, OUTPUT);
-    pinMode(clk_pin,OUTPUT);
-    pinMode(csld_pin,OUTPUT);
 
-    for(int i = 0; i < maxDevices; i++) {
+    for(i = 0; i < dev_num; i++) {
         set_dev_displaytest(i, 0);
         set_dev_scanlimit(i, 7);
         set_dev_decodemode(i, 0);
-        set_dev_shutdown(i, 1);
         clear_dev(i);
+        set_dev_shutdown(i, 0);
         set_dev_intensity(i, 0);
     }
 
 }
 
-void set_dev_order(int dev_order[]){
+// range in [0, dev_num], dev_order.len == dev_num
+bool LedMatrixDriver::set_dev_order(int *in_order){
     // set dev_order
-    this->dev_order = new int[dev_num];
-    for(i = 0; i < dev_num; i++)
-        (this->dev_order)[i] = dev_order[i];
+    if(in_order == NULL)
+        return false;
+
+    //this->dev_order = new int[dev_num];       linshi
+    for(int i = 0; i < dev_num; i++)
+        dev_order[i] = in_order[i];
+    return true;
 }
 
 void LedMatrixDriver::clear_spidata(){
-    for(i = 0; i < spidata_len; i++)
+    for(int i = 0; i < spidata_len; i++)
         spidata[i] = (byte)0;
 }
 
-void LedMatrixDriver::set_spidata(int dev_addr, byte opcode, byte data){
-    int base = addr << 1;
+bool LedMatrixDriver::set_spidata(int dev_addr, volatile byte opcode, volatile byte data){
+    if(dev_addr >= dev_num || opcode < 0 || opcode > 15)
+        return false;
+
+    int base = dev_addr << 1;
     spidata[base + 1] = opcode;
     spidata[base] = data;
+    return true;
 }
 
 void LedMatrixDriver::write_spidata(){
@@ -80,9 +91,11 @@ void LedMatrixDriver::write_spidata(){
     // shift out the data 
     int t, i, op_dev;
     for(i = spidata_len; i > 0; i--){
+        ///*
         op_dev = dev_order[(i - 1) / 2];
-        t = i % 2  == 0 ? (op_dev * 2 + 1) : (op_dev * 2);
-        shiftOut(din_pin, clk_pin, MSBFIRST, spidata[t]);
+        t = (i % 2  == 0) ? (op_dev * 2 + 1) : (op_dev * 2);
+        //*/
+        shiftOut(din_pin, clk_pin, MSBFIRST, spidata[t/*i-1*/]);
     }
 
     digitalWrite(csld_pin, HIGH);
@@ -151,28 +164,23 @@ bool LedMatrixDriver::set_dev_displaytest(const int dev_addr, const bool value){
 
 // clear one dev
 bool LedMatrixDriver::clear_dev(const int dev_addr){
-    clear_spidata();
+    if(dev_addr >= dev_num)
+        return false;
+    
     int base = dev_addr << 3;
     for(int i = 0; i < 8; i++){
         led_status[base + i] = (byte)0;
+        clear_spidata();
         set_spidata(dev_addr, i + 1, (byte)0);
         write_spidata();
     }
+
+    return true;
 }
 
 // clear an area
 /* old
-bool LedMatrixDriver::clear_area(const int row, const int col, const int row_num, const int col_num){
-    clear_spidata();
-    for(int i_addr = 0; i_addr < dev_num; i++){
-        
-    }
-
-
-    
-    
-    
-    
+bool LedMatrixDriver::clear_area(const int row, const int col, const int row_num, const int col_num){    
     clear_spidata();
     
     int &row1 = row, &col1 = col;
@@ -213,50 +221,12 @@ bool LedMatrixDriver::clear_area(const int row, const int col, const int row_num
 }
 */
 
-bool LedMatrixDriver::clear_area(const int row, const int col, const int row_num, const int col_num){
-    clear_spidata();
-    
-    int &row1 = row;
-    int &col1 = col;
-    int row2 = row1 + row_num;
-    int col2 = col1 + col_num;
-
-    int dev_row1 = row1 >> 3;
-    int dev_col1 = col1 >> 3;
-    int dev_row2 = row2 >> 3;
-    int dev_col2 = col2 >> 3;
-
-    int dev = 0;
-    for(int r = dev_row1; r < dev_row2; r++){
-        for(int c = dev_col1; c < dev_col2; c++){
-            dev_addr = r * matrix_width + c;
-
-            int i = row1 < (r << 3) ? 0 : (row1 % 8);
-            int i_max = row2 >= ((r + 1) << 3) ? 8 : (row2 % 8);
-
-            int j = col1 < (c << 3) ? 0 : (col1 % 8);
-            int j_max = col2 >= ((c + 1) << 3) ? 8 : (col2 % 8);
-
-            
-            byte mask = B10000000;
-            for(i = i; i < i_max; i++){
-                for(j = j; j < j_max; j++){
-                    led_status[i] = ( ~ (mask >> j) ) & led_status[i];
-                }
-            }
-
-        }
-    }
-
-    for(int i = 0; i < 8; i++){
-        for(int addr = 0; addr < dev_num; addr++){
-            set_spidata(addr, i + 1, led_status[(addr << 3) + i]);
-        }
-        write_spidata();
-    }
-    
-    
-    return true;
+bool LedMatrixDriver::clear_area(const int row1, const int col1, const int row_num, const int col_num){
+    int len = row_num * col_num;
+    bool b_value[len];
+    for(int i = 0; i < len; i++)
+        b_value[i] = false;
+    return set_area(row1, col1, row_num, col_num, b_value);
 }
 
 /*
@@ -268,55 +238,117 @@ bool LedMatrixDriver::clear_area(const int row, const int col, const int row_num
 
 
 // set an area
-bool LedMatrixDriver::set_area(const int row, const int col, const int row_num, const int col_num, bool pixs[]){
+bool LedMatrixDriver::set_area(const int row1, const int col1, const int row_num, const int col_num, bool *pixs){
+    // Serial.println("  set_area() called");
+    
+    if(pixs == NULL)
+        return false;
+
     clear_spidata();
     
-    int &row1 = row;
-    int &col1 = col;
     int row2 = row1 + row_num;
     int col2 = col1 + col_num;
 
     int dev_row1 = row1 >> 3;
     int dev_col1 = col1 >> 3;
-    int dev_row2 = row2 >> 3;
-    int dev_col2 = col2 >> 3;
+    int dev_row2 = (row2 >> 3) + 1;
+    int dev_col2 = (col2 >> 3) + 1;
 
-    int dev = 0;
+    // Serial.print("  row1:");
+    // Serial.println(row1);
+    // Serial.print("  col1:");
+    // Serial.println(col1);
+    // Serial.print("  row2:");
+    // Serial.println(row2);
+    // Serial.print("  col2:");
+    // Serial.println(col2);
+
+    // Serial.print("  dev_row1:");
+    // Serial.println(dev_row1);
+    // Serial.print("  dev_col1:");
+    // Serial.println(dev_col1);
+    // Serial.print("  dev_row2:");
+    // Serial.println(dev_row2);
+    // Serial.print("  dev_col2:");
+    // Serial.println(dev_col2);
+    
+
+    //int dev = 0;
     for(int r = dev_row1; r < dev_row2; r++){
         for(int c = dev_col1; c < dev_col2; c++){
-            dev_addr = r * matrix_width + c;
+            //dev_addr = r * matrix_width + c;
 
-            int i = row1 < (r << 3) ? 0 : (row1 % 8);
+            // Serial.print("    r:");
+            // Serial.println(r);
+            // Serial.print("    c:");
+            // Serial.println(c);
+
+            int i_min = row1 < (r << 3) ? 0 : (row1 % 8);
             int i_max = row2 >= ((r + 1) << 3) ? 8 : (row2 % 8);
 
-            int j = col1 < (c << 3) ? 0 : (col1 % 8);
+            int j_min = col1 < (c << 3) ? 0 : (col1 % 8);
             int j_max = col2 >= ((c + 1) << 3) ? 8 : (col2 % 8);
 
+            // Serial.print("      i: ");
+            // Serial.print(i_min);
+            // Serial.print(" to ");
+            // Serial.println(i_max);
+            // Serial.print("      j: ");
+            // Serial.print(j_min);
+            // Serial.print(" to ");
+            // Serial.println(j_max);
+            
             
             byte mask = B10000000;
-            for(i = i; i < i_max; i++){
-                for(j = j; j < j_max; j++){
+            for(int i = i_min; i < i_max; i++){
+                int byte_loc = i + (((c % matrix_width) + (r % matrix_height) * matrix_width) << 3);
+                // Serial.print("        i:");
+                // Serial.print(i);
+                // Serial.print("   r = ");
+                // Serial.println(r);
+                for(int j = j_min; j < j_max; j++){
                     int pix_x = i + r * 8 - row1;
                     int pix_y = j + c * 8 - col1;
-                    if(pixs[pix_x * row_num + pix_y] == true){
-                        led_status[i] = (mask >> j) | led_status[i];
-                    }
-                    else{
-                        led_status[i] = ( ~ (mask >> j) ) & led_status[i];
+                    if(pixs != NULL){
+                        
+                        if(pixs[pix_x * col_num + pix_y] == true){      // col_num or row_num
+                            led_status[byte_loc] = (mask >> j) | led_status[byte_loc];
+                            // Serial.print("          j:");
+                            // Serial.println(j);
+                            // Serial.print("            (mask >> j)");
+                            // Serial.println((mask >> j));
+                        }
+                        else{
+                            led_status[byte_loc] = ( ~ (mask >> j) ) & led_status[byte_loc];
+                        }
                     }
                 }
+                
+                //Serial.print("          led_status[byte_loc]:");
+                //Serial.println(led_status[byte_loc]);
             }
 
         }
     }
 
+    bool re_err = false;
     for(int i = 0; i < 8; i++){
         for(int addr = 0; addr < dev_num; addr++){
-            set_spidata(addr, i + 1, led_status[(addr << 3) + i]);
+            re_err += set_spidata(addr, i + 1, led_status[(addr << 3) + i]);
         }
         write_spidata();
     }
     
-    
-    return true;
+    if(row1 < 0 || row_num < 1 || col1 < 0 || col_num < 1)
+        return false;
+    if(row1 + row_num > matrix_width << 3 || col1 + col_num > matrix_height << 3)
+        return false;
+
+    return (~ re_err);
+}
+
+bool LedMatrixDriver::set_point(const int row1, const int col1, bool pix_value){
+    bool b_value[1];
+    b_value[0] = pix_value;
+    return set_area(row1, col1, 1, 1, b_value);
 }
