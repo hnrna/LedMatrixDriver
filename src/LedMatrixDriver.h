@@ -39,6 +39,8 @@ class LedMatrixDriver{
     public:
         LedMatrixDriver(const int din_pin, const int clk_pin, const int csld_pin, const int dev_num, const int matrix_width, const int matrix_height, int dev_order[]);
 
+        
+
         // value  =  0 / 1 / 15 / 255
         bool set_dev_decodemode(const int dev_addr, const int value);
 
@@ -68,6 +70,6 @@ class LedMatrixDriver{
         // set an area
         bool set_area(const int row, const int col, const int row_num, const int col_num, bool pixs[]);
 
-}
+};
 
 #endif	//LedMatrixDriver.h

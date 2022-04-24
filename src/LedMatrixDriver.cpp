@@ -15,7 +15,7 @@
 #define OP_SHUTDOWN    12
 #define OP_DISPLAYTEST 15
 
-LedMatrixDriver::LedMatrixDriver(const int din_pin, const int clk_pin, const int csld_pin, const int dev_num, const int matrix_width, const int matrix_height, int dev_order[]){
+LedMatrixDriver::LedMatrixDriver(const int din_pin, const int clk_pin, const int csld_pin, const int dev_num, const int matrix_width, const int matrix_height){
     this->din_pin = din_pin;
     this->clk_pin = clk_pin;
     this->csld_pin = csld_pin;
@@ -26,11 +26,6 @@ LedMatrixDriver::LedMatrixDriver(const int din_pin, const int clk_pin, const int
     this->spidata_len = dev_num << 1;
     
     int i = 0;
-
-    // set dev_order
-    this->dev_order = new int[dev_num];
-    for(i = 0; i < dev_num; i++)
-        (this->dev_order)[i] = dev_order[i];
     
     // init led_status[]
     int t_sum_col_num = dev_num << 3;       // *8
@@ -58,6 +53,13 @@ LedMatrixDriver::LedMatrixDriver(const int din_pin, const int clk_pin, const int
 
 }
 
+void set_dev_order(int dev_order[]){
+    // set dev_order
+    this->dev_order = new int[dev_num];
+    for(i = 0; i < dev_num; i++)
+        (this->dev_order)[i] = dev_order[i];
+}
+
 void LedMatrixDriver::clear_spidata(){
     for(i = 0; i < spidata_len; i++)
         spidata[i] = (byte)0;
@@ -70,6 +72,9 @@ void LedMatrixDriver::set_spidata(int dev_addr, byte opcode, byte data){
 }
 
 void LedMatrixDriver::write_spidata(){
+    if(dev_order == NULL)
+        return;
+
     digitalWrite(csld_pin, LOW);
 
     // shift out the data 
