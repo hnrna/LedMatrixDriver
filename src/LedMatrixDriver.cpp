@@ -1,5 +1,6 @@
 #include "LedMatrixDriver.h"
 
+
 #define OP_NOOP   0
 #define OP_DIGIT0 1
 #define OP_DIGIT1 2
@@ -15,35 +16,38 @@
 #define OP_SHUTDOWN    12
 #define OP_DISPLAYTEST 15
 
-LedMatrixDriver::LedMatrixDriver(const int din_pin, const int clk_pin, const int csld_pin, const int dev_num, const int matrix_width, const int matrix_height){
+LedMatrixDriver::LedMatrixDriver(const int din_pin, const int clk_pin, const int csld_pin, const int dev_num, const int matrix_width, const int matrix_height, int *dev_order){
+    // set pins
     this->din_pin = din_pin;
     this->clk_pin = clk_pin;
     this->csld_pin = csld_pin;
+
+    // set pins pinMode
     pinMode(din_pin, OUTPUT);
     pinMode(clk_pin,OUTPUT);
     pinMode(csld_pin,OUTPUT);
+
+    // init csld_pin value
     digitalWrite(csld_pin, HIGH);
 
+    // set parameters
     this->dev_num = dev_num;
     this->matrix_width = matrix_width;
     this->matrix_height = matrix_height;
-
     this->spidata_len = dev_num << 1;
-    
+    set_dev_order(dev_order);
+
     int i = 0;
     
     // init led_status[]
-    int t_sum_col_num = dev_num << 3;       // *8
-    //this->led_status = new byte[t_sum_col_num];       linshi
+    int t_sum_col_num = dev_num << 3;
     for(i = 0; i < t_sum_col_num; i++)
         led_status[i] = (byte)0;
     
     // init spidata[]
-    //this->spidata = new byte[spidata_len];
     clear_spidata();
 
-    
-
+    // init all driver chips
     for(i = 0; i < dev_num; i++) {
         set_dev_displaytest(i, 0);
         set_dev_scanlimit(i, 7);
@@ -52,7 +56,6 @@ LedMatrixDriver::LedMatrixDriver(const int din_pin, const int clk_pin, const int
         set_dev_shutdown(i, 0);
         set_dev_intensity(i, 0);
     }
-
 }
 
 // range in [0, dev_num], dev_order.len == dev_num

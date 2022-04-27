@@ -10,33 +10,26 @@
 #endif
 
 class LedMatrixDriver{
-    public:
-    //private:
-        //byte *spidata = NULL;
-        byte spidata[4];       // linshi
-
-        
-
-        byte led_status[16];    // linshi
-        //byte *led_status = NULL;
-
-        int din_pin;
-        int clk_pin;
-        int csld_pin;
-        int dev_num;
-
-        int spidata_len;
-
-        int dev_order[2];      // linshi
-        //int *dev_order = NULL;
-
-        const int dev_width = 8, dev_height = 8;
-        int matrix_width, matrix_height;      // num of devs
-        int pix_width, pix_height;            //num of pixels
-
-        
-
     //public:
+    private:
+        int din_pin, clk_pin, csld_pin;
+        int dev_num;
+        int spidata_len;    // length of spidata[]
+
+        const int dev_width = 8, dev_height = 8;    // 8*8 matrix device
+        int matrix_width, matrix_height;            // num of devices
+        int pix_width, pix_height;                  // num of pixels
+
+        static const int max_dev_num = 100;
+
+        // storage data output to din pin
+        byte spidata[max_dev_num << 1];
+
+        // storage all leds status
+        byte led_status[max_dev_num << 3];
+
+        // storage device order
+        int dev_order[max_dev_num];
 
         void clear_spidata();
         
@@ -44,11 +37,12 @@ class LedMatrixDriver{
 
         void write_spidata();
 
-
-
-        LedMatrixDriver(const int din_pin, const int clk_pin, const int csld_pin, const int dev_num, const int matrix_width, const int matrix_height);
-
         bool set_dev_order(int *in_order);
+
+        
+
+    public:
+        LedMatrixDriver(const int din_pin, const int clk_pin, const int csld_pin, const int dev_num, const int matrix_width, const int matrix_height, int *dev_order);
 
         // value  =  0 / 1 / 15 / 255
         bool set_dev_decodemode(const int dev_addr, const int value);
@@ -66,9 +60,6 @@ class LedMatrixDriver{
         bool set_dev_displaytest(const int dev_addr, const bool value);
 
         
-
-        
-
 
         // clear one dev
         bool clear_dev(const int dev_addr);
