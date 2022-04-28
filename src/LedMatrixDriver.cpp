@@ -181,6 +181,17 @@ bool LedMatrixDriver::clear_dev(const int dev_addr){
     return true;
 }
 
+bool LedMatrixDriver::update_display(){
+    bool re_err = false;
+    for(int i = 0; i < 8; i++){
+        for(int addr = 0; addr < dev_num; addr++){
+            re_err += set_spidata(addr, i + 1, led_status[(addr << 3) + i]);
+        }
+        write_spidata();
+    }
+    return ~ re_err;
+}
+
 // clear an area
 /* old
 bool LedMatrixDriver::clear_area(const int row, const int col, const int row_num, const int col_num){    
@@ -239,9 +250,24 @@ bool LedMatrixDriver::clear_area(const int row1, const int col1, const int row_n
 ↓
 */
 
-
 // set an area
 bool LedMatrixDriver::set_area(const int row1, const int col1, const int row_num, const int col_num, bool *pixs){
+    
+    bool re = true;
+    re = re && preset_area(row1, col1, row_num, col_num, pixs);
+    re = re && update_display(re);
+    
+    return re;
+}
+
+bool LedMatrixDriver::set_point(const int row1, const int col1, bool pix_value){
+    bool b_value[1];
+    b_value[0] = pix_value;
+    return set_area(row1, col1, 1, 1, b_value);
+}
+
+// preset an area (not update display)
+bool preset_area(const int row1, const int col1, const int row_num, const int col_num, bool *pixs){
     // Serial.println("  set_area() called");
     
     if(pixs == NULL)
@@ -334,24 +360,15 @@ bool LedMatrixDriver::set_area(const int row1, const int col1, const int row_num
         }
     }
 
-    bool re_err = false;
-    for(int i = 0; i < 8; i++){
-        for(int addr = 0; addr < dev_num; addr++){
-            re_err += set_spidata(addr, i + 1, led_status[(addr << 3) + i]);
-        }
-        write_spidata();
-    }
+    if(row_num < 1 || row_num > matrix_height || col_num < 1 || col_num > matrix_width)
+        return false;
     
-    if(row1 < 0 || row_num < 1 || col1 < 0 || col_num < 1)
-        return false;
-    if(row1 + row_num > matrix_width << 3 || col1 + col_num > matrix_height << 3)
-        return false;
-
-    return (~ re_err);
+    return true;
 }
 
-bool LedMatrixDriver::set_point(const int row1, const int col1, bool pix_value){
+// preset one led point (not update display)
+bool preset_point(const int row1, const int col1, bool pix_value){
     bool b_value[1];
     b_value[0] = pix_value;
-    return set_area(row1, col1, 1, 1, b_value);
+    return preset_area(row1, col1, 1, 1, b_value);
 }

@@ -59,10 +59,13 @@ class LedMatrixDriver{
         // value = 0 / 1
         bool set_dev_displaytest(const int dev_addr, const bool value);
 
-        
 
         // clear one dev
         bool clear_dev(const int dev_addr);
+
+
+        // update display by led_status[]
+        bool update_display();      // return value about error info, false is error
 
         // clear an area
         bool clear_area(const int row1, const int col1, const int row_num, const int col_num);
@@ -72,6 +75,13 @@ class LedMatrixDriver{
 
         // set one led point
         bool set_point(const int row1, const int col1, bool pix_value);
+
+        // preset an area (not update display)
+        bool preset_area(const int row1, const int col1, const int row_num, const int col_num, bool *pixs);
+
+        // preset one led point (not update display)
+        bool preset_point(const int row1, const int col1, bool pix_value);
+
 
 };
 
