@@ -37,12 +37,11 @@ class LedMatrixDriver{
 
         void write_spidata();
 
-        bool set_dev_order(int *in_order);
 
         
 
     public:
-        LedMatrixDriver(const int din_pin, const int clk_pin, const int csld_pin, const int dev_num, const int matrix_width, const int matrix_height, int *dev_order);
+        LedMatrixDriver(const int din_pin, const int clk_pin, const int csld_pin, const int dev_num, const int matrix_width, const int matrix_height, int *dev_order = nullptr);
 
         // value  =  0 / 1 / 15 / 255
         bool set_dev_decodemode(const int dev_addr, const int value);
@@ -75,6 +74,9 @@ class LedMatrixDriver{
 
         // set one led point
         bool set_point(const int row1, const int col1, bool pix_value);
+
+        // set devices order
+        bool set_dev_order(int *in_order);
 
         // preset an area (not update display)
         bool preset_area(const int row1, const int col1, const int row_num, const int col_num, bool *pixs);
