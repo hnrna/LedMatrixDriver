@@ -1,7 +1,7 @@
 #ifndef LedMatrixDriver_h
 #define LedMatrixDriver_h
 
-#include <avr/pgmspace.h>
+// #include <avr/pgmspace.h>
 
 #if (ARDUINO >= 100)
 #include <Arduino.h>
@@ -77,6 +77,9 @@ class LedMatrixDriver{
 
         // set devices order
         bool set_dev_order(int *in_order);
+
+        // preset all pixs value (not update display)
+        bool preset_allpixs(bool *pixs);
 
         // preset an area (not update display)
         bool preset_area(const int row1, const int col1, const int row_num, const int col_num, bool *pixs);

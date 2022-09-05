@@ -269,6 +269,10 @@ bool LedMatrixDriver::set_point(const int row1, const int col1, bool pix_value){
     return set_area(row1, col1, 1, 1, b_value);
 }
 
+bool LedMatrixDriver::preset_allpixs(bool *pixs){
+    return preset_area(0, 0, pix_height, pix_width, pixs);
+}
+
 // preset an area (not update display)
 bool LedMatrixDriver::preset_area(const int row1, const int col1, const int row_num, const int col_num, bool *pixs){
     // Serial.println("  set_area() called");
