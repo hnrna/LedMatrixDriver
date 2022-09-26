@@ -25,9 +25,11 @@ class LedMatrixDriver{
         // storage data output to din pin
         byte spidata[max_dev_num << 1];
 
+    public:     // temp-public: for get values of led_status[]
         // storage all leds status
         byte led_status[max_dev_num << 3];
 
+    private:
         // storage device order
         int dev_order[max_dev_num];
 
