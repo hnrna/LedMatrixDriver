@@ -41,7 +41,7 @@ class LedMatrixDriver{
         
 
     public:
-        LedMatrixDriver(const int din_pin, const int clk_pin, const int csld_pin, const int dev_num, const int matrix_width, const int matrix_height, int *dev_order = nullptr);
+        LedMatrixDriver(const int din_pin, const int clk_pin, const int csld_pin, const int matrix_width, const int matrix_height, int *dev_order = nullptr);
 
         // value  =  0 / 1 / 15 / 255
         bool set_dev_decodemode(const int dev_addr, const int value);
