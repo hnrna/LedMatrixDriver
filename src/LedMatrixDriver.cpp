@@ -55,7 +55,7 @@ void LedMatrixDriver::setup_pin_dev(){
 
     // init all driver chips
     for(i = 0; i < this->dev_num; i++) {
-        set_dev_displaytest(i, 0);
+        // set_dev_displaytest(i, 0);
         set_dev_scanlimit(i, 7);
         set_dev_decodemode(i, 0);
         clear_dev(i);
