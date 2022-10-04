@@ -16,14 +16,14 @@
 #define OP_SHUTDOWN    12
 #define OP_DISPLAYTEST 15
 
-LedMatrixDriver::LedMatrixDriver(const int din_pin, const int clk_pin, const int csld_pin, const int matrix_width, const int matrix_height, int *dev_order){
+LedMatrixDriver::LedMatrixDriver(const int din_pin, const int clk_pin, const int csld_pin, const int dev_num, const int matrix_width, const int matrix_height, int *dev_order){
     // set pins
     this->din_pin = din_pin;
     this->clk_pin = clk_pin;
     this->csld_pin = csld_pin;
 
     // set parameters
-    this->dev_num = matrix_width * matrix_height;
+    this->dev_num = dev_num;
     this->matrix_width = matrix_width;
     this->matrix_height = matrix_height;
     this->pix_width = matrix_width << 3;
