@@ -22,14 +22,6 @@ LedMatrixDriver::LedMatrixDriver(const int din_pin, const int clk_pin, const int
     this->clk_pin = clk_pin;
     this->csld_pin = csld_pin;
 
-    // set pins pinMode
-    pinMode(din_pin, OUTPUT);
-    pinMode(clk_pin,OUTPUT);
-    pinMode(csld_pin,OUTPUT);
-
-    // init csld_pin value
-    digitalWrite(csld_pin, HIGH);
-
     // set parameters
     this->dev_num = matrix_width * matrix_height;
     this->matrix_width = matrix_width;
@@ -38,6 +30,18 @@ LedMatrixDriver::LedMatrixDriver(const int din_pin, const int clk_pin, const int
     this->pix_height = matrix_height << 3;
     this->spidata_len = this->dev_num << 1;
     set_dev_order(dev_order);
+}
+
+void LedMatrixDriver::setup_pin_dev(){
+    
+    // set pins pinMode
+    pinMode(din_pin, OUTPUT);
+    pinMode(clk_pin,OUTPUT);
+    pinMode(csld_pin,OUTPUT);
+
+    // init csld_pin value
+    digitalWrite(csld_pin, HIGH);
+
 
     int i = 0;
     
@@ -58,6 +62,7 @@ LedMatrixDriver::LedMatrixDriver(const int din_pin, const int clk_pin, const int
         set_dev_shutdown(i, 0);
         set_dev_intensity(i, 0);
     }
+    
 }
 
 // range in [0, dev_num], dev_order.len == dev_num
