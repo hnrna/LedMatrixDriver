@@ -9,7 +9,7 @@
 #include <WProgram.h>
 #endif
 
-enum calculation_operation = {EQU, OR, AND, XOR, XNOR};
+enum calculation_operation{EQU, OR, AND, XOR, XNOR};
 
 class LedMatrixDriver{
     //public:
