@@ -80,13 +80,13 @@ class LedMatrixDriver{
         bool set_dev_order(int *in_order);
 
         // preset all pixs value (not update display)
-        bool set_allpixs_val(bool *pixs);
+        bool set_allpixs_values(bool *pixs);
 
         // preset an area (not update display)
         bool set_area_values(const int row1, const int col1, const int row_num, const int col_num, bool *pixs);
 
         // preset one led point (not update display)
-        bool set_point_val(const int row1, const int col1, bool pix_value);
+        bool set_point_values(const int row1, const int col1, bool pix_value);
 
 };
 

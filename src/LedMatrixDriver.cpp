@@ -260,7 +260,7 @@ bool LedMatrixDriver::clear_area2zero(const int row1, const int col1, const int 
 
 // set an area
 bool LedMatrixDriver::set_area(const int row1, const int col1, const int row_num, const int col_num, bool *pixs){
-    if(preset_area(row1, col1, row_num, col_num, pixs)== false){
+    if(set_area_values(row1, col1, row_num, col_num, pixs)== false){
         return false;
     }
     if(update_display() == false){
@@ -275,12 +275,12 @@ bool LedMatrixDriver::set_point(const int row1, const int col1, bool pix_value){
     return set_area(row1, col1, 1, 1, b_value);
 }
 
-bool LedMatrixDriver::preset_allpixs(bool *pixs){
-    return preset_area(0, 0, pix_height, pix_width, pixs);
+bool LedMatrixDriver::set_allpixs_values(bool *pixs){
+    return set_area_values(0, 0, pix_height, pix_width, pixs);
 }
 
 // preset an area (not update display)
-bool LedMatrixDriver::preset_area(const int row1, const int col1, const int row_num, const int col_num, bool *pixs){
+bool LedMatrixDriver::set_area_values(const int row1, const int col1, const int row_num, const int col_num, bool *pixs){
     // Serial.println("  set_area() called");
     
     if(pixs == NULL)
@@ -380,8 +380,8 @@ bool LedMatrixDriver::preset_area(const int row1, const int col1, const int row_
 }
 
 // preset one led point (not update display)
-bool LedMatrixDriver::preset_point(const int row1, const int col1, bool pix_value){
+bool LedMatrixDriver::set_point_values(const int row1, const int col1, bool pix_value){
     bool b_value[1];
     b_value[0] = pix_value;
-    return preset_area(row1, col1, 1, 1, b_value);
+    return set_area_values(row1, col1, 1, 1, b_value);
 }  
