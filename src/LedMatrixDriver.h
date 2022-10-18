@@ -9,6 +9,8 @@
 #include <WProgram.h>
 #endif
 
+enum calculation_operation = {EQU, OR, AND, XOR, XNOR};
+
 class LedMatrixDriver{
     //public:
     private:
@@ -25,11 +27,9 @@ class LedMatrixDriver{
         // storage data output to din pin
         byte spidata[max_dev_num << 1];
 
-    public:     // temp-public: for get values of led_status[]
         // storage all leds status
         byte led_status[max_dev_num << 3];
 
-    private:
         // storage device order
         int dev_order[max_dev_num];
 
@@ -39,8 +39,11 @@ class LedMatrixDriver{
 
         void write_spidata();
 
+        // set an area
+        bool set_area(const int row1, const int col1, const int row_num, const int col_num, bool *pixs);
 
-
+        // set one led point
+        bool set_point(const int row1, const int col1, bool pix_value);
         
 
     public:
@@ -64,35 +67,26 @@ class LedMatrixDriver{
         // value = 0 / 1
         bool set_dev_displaytest(const int dev_addr, const bool value);
 
-
         // clear one dev
         bool clear_dev(const int dev_addr);
-
 
         // update display by led_status[]
         bool update_display();      // return value about error info, false is error
 
         // clear an area
-        bool clear_area(const int row1, const int col1, const int row_num, const int col_num);
-
-        // set an area
-        bool set_area(const int row1, const int col1, const int row_num, const int col_num, bool *pixs);
-
-        // set one led point
-        bool set_point(const int row1, const int col1, bool pix_value);
+        bool clear_area2zero(const int row1, const int col1, const int row_num, const int col_num);
 
         // set devices order
         bool set_dev_order(int *in_order);
 
         // preset all pixs value (not update display)
-        bool preset_allpixs(bool *pixs);
+        bool set_allpixs_val(bool *pixs);
 
         // preset an area (not update display)
-        bool preset_area(const int row1, const int col1, const int row_num, const int col_num, bool *pixs);
+        bool set_area_values(const int row1, const int col1, const int row_num, const int col_num, bool *pixs);
 
         // preset one led point (not update display)
-        bool preset_point(const int row1, const int col1, bool pix_value);
-
+        bool set_point_val(const int row1, const int col1, bool pix_value);
 
 };
 
