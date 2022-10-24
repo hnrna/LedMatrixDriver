@@ -251,6 +251,14 @@ bool LedMatrixDriver::clear_area2zero(const int row1, const int col1, const int 
     return set_area(row1, col1, row_num, col_num, b_value);
 }
 
+bool LedMatrixDriver::set_area_as_same_value(const int row1, const int col1, const int row_num, const int col_num, bool val){
+    int len = row_num * col_num;
+    bool b_value[len];
+    for(int i = 0; i < len; i++)
+        b_value[i] = val;
+    return set_area_values(row1, col1, row_num, col_num, b_value);
+}
+
 /*
 ↑
 修改思路：直接对led_status进行操作，
