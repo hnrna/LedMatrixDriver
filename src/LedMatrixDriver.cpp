@@ -288,7 +288,7 @@ bool LedMatrixDriver::set_allpixs_values(bool *pixs){
 }
 
 // preset an area (not update display)
-bool LedMatrixDriver::set_area_values(const int row1, const int col1, const int row_num, const int col_num, bool *pixs){
+bool LedMatrixDriver::set_area_values(const int row1, const int col1, const int row_num, const int col_num, bool *pixs, bool outside_part_auto_display = false){
     // Serial.println("  set_area() called");
     
     if(pixs == NULL)
@@ -303,6 +303,13 @@ bool LedMatrixDriver::set_area_values(const int row1, const int col1, const int 
     int dev_col1 = col1 >> 3;
     int dev_row2 = (row2 >> 3) + 1;
     int dev_col2 = (col2 >> 3) + 1;
+
+    if(!outside_part_auto_display){
+        dev_row1 %= matrix_height;
+        dev_col1 %= matrix_width;
+        dev_row2 %= matrix_height;
+        dev_col2 %= matrix_width;
+    }
 
     // Serial.print("  row1:");
     // Serial.println(row1);

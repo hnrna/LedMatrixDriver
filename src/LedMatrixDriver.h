@@ -83,7 +83,7 @@ class LedMatrixDriver{
         bool set_allpixs_values(bool *pixs);
 
         // preset an area (not update display)
-        bool set_area_values(const int row1, const int col1, const int row_num, const int col_num, bool *pixs);
+        bool set_area_values(const int row1, const int col1, const int row_num, const int col_num, bool *pixs, bool outside_part_auto_display = false);
         
         // preset an area as a same value (1 or 0)
         bool set_area_as_same_value(const int row1, const int col1, const int row_num, const int col_num, bool val);
